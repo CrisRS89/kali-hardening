@@ -1,0 +1,51 @@
+# Eliminar reglas existentes
+-D
+
+# Buffer size
+-b 8192
+
+# Falla si no se puede auditar
+-f 1
+
+# Monitorear cambios de hora
+-w /etc/localtime -p wa -k time-change
+
+# Monitorear cambios en archivos de sistema
+-w /etc/passwd -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/group -p wa -k identity
+-w /etc/gshadow -p wa -k identity
+
+# Monitorear cambios en config de red
+-w /etc/network/ -p wa -k network
+-w /etc/hosts -p wa -k network
+
+# Monitorear logs
+-w /var/log/auth.log -p wa -k auth-log
+-w /var/log/syslog -p wa -k syslog
+
+# Monitorear sesiones de usuarios
+-w /var/log/wtmp -p wa -k session
+-w /var/log/btmp -p wa -k session
+-w /var/run/utmp -p wa -k session
+
+# Monitorear carga de módulos del kernel
+-w /sbin/insmod -p x -k modules
+-w /sbin/rmmod -p x -k modules
+-w /sbin/modprobe -p x -k modules
+
+# Monitorear cambios en configs de seguridad
+-w /etc/selinux/ -p wa -k mac-policy
+-w /etc/apparmor/ -p wa -k mac-policy
+-w /etc/apparmor.d/ -p wa -k mac-policy
+
+# Monitorear sudo
+-w /etc/sudoers -p wa -k sudoers
+-w /etc/sudoers.d/ -p wa -k sudoers
+
+# Monitorear binarios críticos
+-w /usr/bin/sudo -p x -k priv-esc
+-w /usr/bin/pkexec -p x -k priv-esc
+
+# Ejecución de syscalls importantes
+-a always,exit -F arch=b64 -S execve -k exec

@@ -1,0 +1,11 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# ARP estática para gateway (anti ARP spoofing)
+up ip neigh add 192.168.73.254 lladdr 6c:31:0e:22:7b:ca nud permanent dev eth0

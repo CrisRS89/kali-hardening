@@ -1,0 +1,26 @@
+#!/bin/bash
+# Detectar posibles ataques ARP spoofing
+
+GW_IP="192.168.73.254"
+GW_MAC="6c:31:0e:22:7b:ca"
+
+echo "=== Verificando ARP del gateway ==="
+IP_MAC=$(ip neigh show $GW_IP 2>/dev/null | awk '{print $5}')
+if [ "$IP_MAC" != "$GW_MAC" ]; then
+  echo -e "\e[1;31m⚠️  POSIBLE ARP SPOOFING DETECTADO!\e[0m"
+  echo "Esperado: $GW_MAC"
+  echo "Obtenido: $IP_MAC"
+else
+  echo -e "\e[1;32m✓ Gateway OK - MAC: $IP_MAC\e[0m"
+fi
+
+echo ""
+echo "=== Últimos cambios ARP (logs) ==="
+sudo journalctl -u arpwatch@eth0 --no-pager -n 10 2>/dev/null
+
+echo ""
+echo "=== Escaneando red en busca de MAC duplicadas ==="
+for ip in $(seq 1 254); do
+  sudo arping -c 1 -D 192.168.73.$ip 2>/dev/null | grep -q "0 extra" || echo "Posible IP duplicada: .$ip"
+done
+echo "Escaneo completo."

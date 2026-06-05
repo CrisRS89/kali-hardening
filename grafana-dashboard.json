@@ -1,0 +1,85 @@
+{
+  "title": "Monitoreo de Seguridad",
+  "tags": ["security"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "title": "Alertas Suricata (última hora)",
+      "type": "logs",
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 0},
+      "targets": [{
+        "expr": "{job=\"suricata\"} | json | event_type=\"alert\"",
+        "legendFormat": "",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "wrapLogMessage": true
+      }
+    },
+    {
+      "title": "Firewall - Paquetes Bloqueados",
+      "type": "logs",
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 0},
+      "targets": [{
+        "expr": "{job=\"kernel\"} |= \"NFT-BLOCK\"",
+        "legendFormat": "",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "wrapLogMessage": true
+      }
+    },
+    {
+      "title": "Intentos de autenticación fallidos",
+      "type": "logs",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 10},
+      "targets": [{
+        "expr": "{job=\"auth\"} |= \"Failed password\"",
+        "legendFormat": "",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "wrapLogMessage": true
+      }
+    },
+    {
+      "title": "fail2ban - bans recientes",
+      "type": "logs",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 10},
+      "targets": [{
+        "expr": "{job=\"fail2ban\"} |= \"Ban\"",
+        "legendFormat": "",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "wrapLogMessage": true
+      }
+    },
+    {
+      "title": "Auditoría - Cambios en sistema",
+      "type": "logs",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 18},
+      "targets": [{
+        "expr": "{job=\"auditd\"}",
+        "legendFormat": "",
+        "refId": "A"
+      }],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "wrapLogMessage": true
+      }
+    }
+  ]
+}

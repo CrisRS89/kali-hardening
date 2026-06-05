@@ -1,0 +1,36 @@
+#!/bin/bash
+
+echo -e "\e[1;31m⚠️  MONITOREO EN VIVO - Ctrl+C para salir\e[0m"
+echo ""
+
+# Mostrar firewall, suricata, fail2ban y crowdsec en tiempo real
+sudo tail -f /var/log/suricata/eve.json 2>/dev/null | python3 -c "
+import sys, json, subprocess, os
+from datetime import datetime
+
+def show_alert(d):
+    ts = d.get('timestamp','')[:19].replace('T',' ')
+    sig = d.get('alert',{}).get('signature','')
+    cat = d.get('alert',{}).get('category','')
+    sev = d.get('alert',{}).get('severity',0)
+    src = d.get('src_ip','')
+    dst = d.get('dest_ip','')
+    sport = d.get('src_port','')
+    dport = d.get('dest_port','')
+    
+    color = '\033[91m' if sev <= 2 else '\033[93m'
+    print(f\"{color}[{ts}] {sig}\")
+    print(f\"  {cat} | {src}:{sport} -> {dst}:{dport}\033[0m\")
+    print()
+
+for line in sys.stdin:
+    try:
+        d = json.loads(line)
+        if d.get('event_type') == 'alert':
+            show_alert(d)
+    except:
+        pass
+" 2>&1
+
+# Si suricata no tiene datos, mostrar logs del firewall
+sudo journalctl -kf 2>/dev/null | grep --line-buffered "NFT-BLOCK"

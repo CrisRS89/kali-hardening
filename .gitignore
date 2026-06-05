@@ -1,0 +1,6 @@
+# Datos locales de servicios
+/opt/loki/data/
+/opt/loki/positions.yaml
+
+# Backups
+*.bak

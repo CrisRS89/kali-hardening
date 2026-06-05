@@ -1,0 +1,34 @@
+#!/bin/bash
+
+echo -e "\e[1;34m╔══════════════════════════════════════════╗"
+echo -e "║       MONITOREO DE SEGURIDAD          ║"
+echo -e "╚══════════════════════════════════════════╝\e[0m"
+
+echo -e "\n\e[1;33m[🔥 FIREWALL - Paquetes Bloqueados]\e[0m"
+sudo nft list chain inet filter input 2>/dev/null | grep -A2 "log prefix" | head -3
+sudo nft list chain inet filter forward 2>/dev/null | grep -A2 "log prefix" | head -3
+
+echo -e "\n\e[1;33m[🚨 SURICATA - Últimas Alertas]\e[0m"
+if [ -f /var/log/suricata/eve.json ]; then
+  sudo tail -c 2M /var/log/suricata/eve.json 2>/dev/null | grep -o '"event_type":"alert"[^}]*}' | tail -5 | python3 -c "
+import sys,json
+for line in sys.stdin:
+    try:
+        d=json.loads('{'+line.strip().strip(','))
+        print(f\"  [{d.get('alert',{}).get('severity',0)}] {d.get('alert',{}).get('signature','')} -> {d.get('src_ip','')}:{d.get('src_port','')}\")
+    except: pass
+" 2>/dev/null
+else
+  echo "  (sin alertas aún)"
+fi
+
+echo -e "\n\e[1;33m[⛔ FAIL2BAN - IPs Baneadas]\e[0m"
+sudo fail2ban-client status sshd 2>/dev/null | grep "Banned IP list" | grep -oP '(?<=list:).*' || echo "  (ninguna)"
+
+echo -e "\n\e[1;33m[🛡️  CROWDSEC - Decisiones]\e[0m"
+sudo cscli decisions list 2>/dev/null | tail -n+3 | head -5
+sudo cscli alerts list --limit 3 2>/dev/null | tail -n+4 | head -3
+
+echo -e "\n\e[1;33m[📝 AUDITD - Eventos Recientes]\e[0m"
+sudo ausearch -ts recent -i 2>/dev/null | grep -E "type=AVC|SYSCALL|USER_LOGIN" | head -3 || echo "  (ninguno)"
+echo ""
